@@ -32,6 +32,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <cli/cli.hpp>
@@ -80,34 +81,19 @@ void Serial::ReceiveTask(void)
 {
     uint16_t bufLength;
     const uint8_t *buf;
-    const uint8_t *cur;
     const uint8_t *end;
 
     buf = otPlatSerialGetReceivedBytes(&bufLength);
-
     end = buf + bufLength;
 
-    for (cur = buf; cur < end; cur++)
-    {
-        switch (*cur)
-        {
-        case '\r':
-	case '\n':
-            otPlatSerialSend(CRNL, sizeof(CRNL));
-            break;
-
-        default:
-            otPlatSerialSend(cur, 1);
-            break;
-        }
-    }
-
-    while (bufLength > 0 && mRxLength < kRxBufferSize)
+    for (; buf < end; buf++)
     {
         switch (*buf)
         {
         case '\r':
         case '\n':
+            otPlatSerialSend(CRNL, sizeof(CRNL));
+
             if (mRxLength > 0)
             {
                 mRxBuffer[mRxLength] = '\0';
@@ -116,23 +102,26 @@ void Serial::ReceiveTask(void)
 
             break;
 
+        case 3: // CTRL-C
+            exit(1);
+            break;
+
         case '\b':
         case 127:
+            otPlatSerialSend(sEraseString, sizeof(sEraseString));
+
             if (mRxLength > 0)
             {
                 mRxBuffer[--mRxLength] = '\0';
-                otPlatSerialSend(sEraseString, sizeof(sEraseString));
             }
 
             break;
 
         default:
+            otPlatSerialSend(buf, 1);
             mRxBuffer[mRxLength++] = *buf;
             break;
         }
-
-        buf++;
-        bufLength--;
     }
 
     otPlatSerialHandleReceiveDone();
