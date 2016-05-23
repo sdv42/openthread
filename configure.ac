@@ -265,6 +265,14 @@ NL_ENABLE_OPTIMIZATION([yes])
 AM_CONDITIONAL([OPENTHREAD_BUILD_OPTIMIZED], [test "${nl_cv_build_optimized}" = "yes"])
 
 #
+# Code style
+#
+
+AC_CHECK_TOOL(ASTYLE, astyle)
+AC_SUBST(ASTYLE_PRETTY_ARGS, ["--options=\${abs_top_builddir}/.astyle-opts"])
+AC_SUBST(ASTYLE_PRETTY_CHECK_ARGS, ["--options=\${abs_top_builddir}/.astyle-opts --dry-run"])
+
+#
 # Tests
 #
 AC_MSG_NOTICE([checking whether to build tests])
@@ -421,6 +429,7 @@ include/crypto/Makefile
 include/platform/Makefile
 src/Makefile
 src/cli/Makefile
+src/ncp/Makefile
 src/core/Makefile
 third_party/Makefile
 third_party/mbedtls/Makefile
@@ -428,6 +437,7 @@ examples/Makefile
 examples/platform/Makefile
 examples/platform/posix/Makefile
 examples/cli/Makefile
+examples/ncp/Makefile
 tests/Makefile
 tests/scripts/Makefile
 tests/unit/Makefile
@@ -484,6 +494,9 @@ AC_MSG_NOTICE([
   C++ Compile flags                         : ${CXXFLAGS:--}
   Link flags                                : ${LDFLAGS:--}
   Link libraries                            : ${LIBS}
+  Astyle                                    : ${ASTYLE}
+  Astyle pretty args                        : ${ASTYLE_PRETTY_ARGS}
+  Astyle pretty check args                  : ${ASTYLE_PRETTY_CHECK_ARGS}
 
 ])
 
